@@ -1,54 +1,79 @@
 -- PostgreSQL v18.7
 
 CREATE TABLE puntoacopio (
-    pk_puntoacopio SERIAL NOT NULL PRIMARY KEY,
-    pun_nombre CHARACTER VARYINg(100) DEFAULT NULL,
-    pun_direccion CHARACTER VARYINg(255) DEFAULT NULL,
+    pk_puntoacopio BIGINT GENERATED ALWAYS AS IDENTITY PRIMARY KEY,
+    pun_nombre CHARACTER VARYING(100) DEFAULT NOT NULL,
+    pun_direccion CHARACTER VARYING(255) DEFAULT NOT NULL,
     pun_telefono INTEGER DEFAULT 0,
     pun_estado INTEGER DEFAULT 1
 );
 
-CREATE TABLE responsable (
-    pk_responsable SERIAL NOT NULL PRIMARY KEY,
-    res_nombre CHARACTER VARYINg(100) DEFAULT NULL,
-    res_telefono INTEGER DEFAULT 0,
-    res_estado INTEGER DEFAULT 1
+CREATE TABLE usuario (
+    pk_usuario BIGINT GENERATED ALWAYS AS IDENTITY PRIMARY KEY,
+    usu_paterno CHARACTER VARYING(50) DEFAULT NULL::CHARACTER VARYING,
+    usu_materno CHARACTER VARYING(50) DEFAULT NULL::CHARACTER VARYING,
+    usu_nombre CHARACTER VARYING(50) DEFAULT NOT NULL::CHARACTER VARYING,
+    usu_telefono INTEGER DEFAULT 0,
+    usu_alias CHARACTER VARYING(20) DEFAULT NOT NULL::CHARACTER VARYING,
+    usu_contrasenia CHARACTER VARYING(100) DEFAULT NOT NULL::CHARACTER VARYING,
+    usu_estado INTEGER DEFAULT 1
+);
+
+CREATE TABLE rol (
+    pk_rol BIGINT GENERATED ALWAYS AS IDENTITY PRIMARY KEY,
+    rol_abreviatura CHARACTER VARYING(20) DEFAULT NOT NULL::CHARACTER VARYING,
+    rol_descripcion CHARACTER VARYING(255) DEFAULT NOT NULL::CHARACTER VARYING,
+    rol_estado INTEGER DEFAULT 1
 );
 
 CREATE TABLE material (
-    pk_material SERIAL NOT NULL PRIMARY KEY,
+    pk_material BIGINT GENERATED ALWAYS AS IDENTITY PRIMARY KEY,
     mat_tipo INTEGER DEFAULT 0,
-    mat_descripcion CHARACTER VARYINg(255) DEFAULT NULL,
+    mat_descripcion CHARACTER VARYING(255) DEFAULT NOT NULL,
     mat_estado INTEGER DEFAULT 1
 );
 
 CREATE TABLE retiro (
-    pk_retiro SERIAL NOT NULL PRIMARY KEY,
+    pk_retiro BIGINT GENERATED ALWAYS AS IDENTITY PRIMARY KEY,
     ret_fecha DATE DEFAULT (NOW())::DATE,
-    ret_empresatransporte CHARACTER VARYINg(255) DEFAULT NULL,
+    ret_empresatransporte CHARACTER VARYING(255) DEFAULT NOT NULL,
     ret_estado INTEGER DEFAULT 1
 );
 
-CREATE TABLE relpuntoresponsable (
-    pk_puntoresponsable SERIAL NOT NULL PRIMARY KEY,
-    rpr_fechaentrega DATE DEFAULT (NOW())::DATE,
-    fk_pkpuntoacopio INTEGER DEFAULT 0,
-    fk_pkresponsable INTEGER DEFAULT 0,
-    rpr_estado INTEGER DEFAULT 1,
+CREATE TABLE relpuntousuario (
+    pk_puntousuario BIGINT GENERATED ALWAYS AS IDENTITY PRIMARY KEY,
+    rpu_fechaentrega DATE DEFAULT (NOW())::DATE,
+    fk_pkpuntoacopio INTEGER NOT NULL,
+    fk_pkusuario INTEGER NOT NULL,
+    rpu_estado INTEGER DEFAULT 1,
     FOREIGN KEY (fk_pkpuntoacopio) REFERENCES puntoacopio(pk_puntoacopio) ON UPDATE RESTRICT ON DELETE RESTRICT,
-    FOREIGN KEY (fk_pkresponsable) REFERENCES responsable(pk_responsable) ON UPDATE RESTRICT ON DELETE RESTRICT
+    FOREIGN KEY (fk_pkusuario) REFERENCES usuario(pk_usuario) ON UPDATE RESTRICT ON DELETE RESTRICT
 );
 
-CREATE TABLE relentregamateriaretiro (
-    pk_entregamateriaretiro SERIAL NOT NULL PRIMARY KEY,
-    enr_peso DECIMAL(5, 2) DEFAULT 0,
-    enr_tipo INTEGER DEFAULT 0,
-    fk_pkpuntoresponsable INTEGER DEFAULT 0,
-    fk_pkmaterial INTEGER DEFAULT 0,
-    fk_pkretiro INTEGER DEFAULT 0,
+CREATE TABLE relpuntousuariomateriaretiro (
+    pk_puntousuariomateriaretiro BIGINT GENERATED ALWAYS AS IDENTITY PRIMARY KEY,
+    pmr_peso DECIMAL(5, 2) DEFAULT 0,
+    pmr_tipo INTEGER DEFAULT 1,
+    fk_pkpuntousuario INTEGER NOT NULL,
+    fk_pkmaterial INTEGER NOT NULL,
+    fk_pkretiro INTEGER NOT NULL,
     enr_estado INTEGER DEFAULT 1,
-    FOREIGN KEY (fk_pkpuntoresponsable) REFERENCES relpuntoresponsable(pk_puntoresponsable) ON UPDATE RESTRICT ON DELETE RESTRICT,
+    FOREIGN KEY (fk_pkpuntousuario) REFERENCES relpuntousuario(pk_puntousuario) ON UPDATE RESTRICT ON DELETE RESTRICT,
     FOREIGN KEY (fk_pkmaterial) REFERENCES material(pk_material) ON UPDATE RESTRICT ON DELETE RESTRICT,
     FOREIGN KEY (fk_pkretiro) REFERENCES retiro(pk_retiro) ON UPDATE RESTRICT ON DELETE RESTRICT
 );
 
+CREATE TABLE relusuariorol (
+    pk_usuariorol BIGINT GENERATED ALWAYS AS IDENTITY PRIMARY KEY,
+    rur_estado INTEGER DEFAULT 1,
+    fk_pkusuario INTEGER NOT NULL,
+    fk_pkrol INTEGER NOT NULL,
+    FOREIGN KEY (fk_pkusuario) REFERENCES usuario(pk_usuario) ON UPDATE RESTRICT ON DELETE RESTRICT,
+    FOREIGN KEY (fk_pkrol) REFERENCES rol(pk_rol) ON UPDATE RESTRICT ON DELETE RESTRICT
+);
+
+CREATE TABLE clave (
+    pk_clave BIGINT GENERATED ALWAYS AS IDENTITY PRIMARY KEY,
+    cla_contrasenia CHARACTER VARYING(100) DEFAULT NULL::CHARACTER VARYING,
+    cla_estado INTEGER DEFAULT 1
+);
